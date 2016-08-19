@@ -25,7 +25,6 @@ Partial Class frmMain
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
         Me.tcBot = New System.Windows.Forms.TabControl()
         Me.tpMain = New System.Windows.Forms.TabPage()
-        Me.Button1 = New System.Windows.Forms.Button()
         Me.llForum = New System.Windows.Forms.LinkLabel()
         Me.llPage = New System.Windows.Forms.LinkLabel()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
@@ -93,6 +92,7 @@ Partial Class frmMain
         Me.chkAutoMineClaim = New System.Windows.Forms.CheckBox()
         Me.chkAutoSell = New System.Windows.Forms.CheckBox()
         Me.tpTools = New System.Windows.Forms.TabPage()
+        Me.lblAdvancedHireFuse = New System.Windows.Forms.Label()
         Me.btnAbortHireFuse = New System.Windows.Forms.Button()
         Me.btnAwaken = New System.Windows.Forms.Button()
         Me.btmBotSetup = New System.Windows.Forms.Button()
@@ -113,7 +113,6 @@ Partial Class frmMain
         Me.lblStatsStartGold = New System.Windows.Forms.Label()
         Me.tpLog = New System.Windows.Forms.TabPage()
         Me.txtLog = New System.Windows.Forms.TextBox()
-        Me.lblAdvancedHireFuse = New System.Windows.Forms.Label()
         Me.tcBot.SuspendLayout()
         Me.tpMain.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -156,7 +155,6 @@ Partial Class frmMain
         '
         'tpMain
         '
-        Me.tpMain.Controls.Add(Me.Button1)
         Me.tpMain.Controls.Add(Me.llForum)
         Me.tpMain.Controls.Add(Me.llPage)
         Me.tpMain.Controls.Add(Me.PictureBox1)
@@ -175,15 +173,6 @@ Partial Class frmMain
         Me.tpMain.TabIndex = 0
         Me.tpMain.Text = "Main"
         Me.tpMain.UseVisualStyleBackColor = True
-        '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(572, 369)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(75, 23)
-        Me.Button1.TabIndex = 14
-        Me.Button1.Text = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
         '
         'llForum
         '
@@ -930,6 +919,18 @@ Partial Class frmMain
         Me.tpTools.Text = "Tools"
         Me.tpTools.UseVisualStyleBackColor = True
         '
+        'lblAdvancedHireFuse
+        '
+        Me.lblAdvancedHireFuse.AutoSize = True
+        Me.lblAdvancedHireFuse.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.lblAdvancedHireFuse.Font = New System.Drawing.Font("Tahoma", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblAdvancedHireFuse.ForeColor = System.Drawing.Color.Blue
+        Me.lblAdvancedHireFuse.Location = New System.Drawing.Point(8, 87)
+        Me.lblAdvancedHireFuse.Name = "lblAdvancedHireFuse"
+        Me.lblAdvancedHireFuse.Size = New System.Drawing.Size(124, 13)
+        Me.lblAdvancedHireFuse.TabIndex = 8
+        Me.lblAdvancedHireFuse.Text = "Advanced Hire and Fuse"
+        '
         'btnAbortHireFuse
         '
         Me.btnAbortHireFuse.Location = New System.Drawing.Point(148, 6)
@@ -1131,18 +1132,6 @@ Partial Class frmMain
         Me.txtLog.TabIndex = 0
         Me.txtLog.WordWrap = False
         '
-        'lblAdvancedHireFuse
-        '
-        Me.lblAdvancedHireFuse.AutoSize = True
-        Me.lblAdvancedHireFuse.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.lblAdvancedHireFuse.Font = New System.Drawing.Font("Tahoma", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblAdvancedHireFuse.ForeColor = System.Drawing.Color.Blue
-        Me.lblAdvancedHireFuse.Location = New System.Drawing.Point(8, 87)
-        Me.lblAdvancedHireFuse.Name = "lblAdvancedHireFuse"
-        Me.lblAdvancedHireFuse.Size = New System.Drawing.Size(124, 13)
-        Me.lblAdvancedHireFuse.TabIndex = 8
-        Me.lblAdvancedHireFuse.Text = "Advanced Hire and Fuse"
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1284,6 +1273,5 @@ Partial Class frmMain
     Friend WithEvents llPage As LinkLabel
     Friend WithEvents PictureBox1 As PictureBox
     Friend WithEvents chkTowerClimb As CheckBox
-    Friend WithEvents Button1 As Button
     Friend WithEvents lblAdvancedHireFuse As Label
 End Class
