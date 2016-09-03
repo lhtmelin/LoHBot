@@ -201,6 +201,13 @@ Public Class BitmapTools
         Ret = Ret.Replace("%", "")
         Ret = Ret.Replace("#", "")
         Ret = Ret.Replace("=", "")
+
+        If Ret.Substring(0, 1) = "-" Then
+            Ret = "-" & Ret.Replace("-", "")
+        Else
+            Ret = Ret.Replace("-", "")
+        End If
+
         Dim rgx As System.Text.RegularExpressions.Regex = New System.Text.RegularExpressions.Regex("[^0-9-/]")
         Ret = rgx.Replace(Ret, "")
 

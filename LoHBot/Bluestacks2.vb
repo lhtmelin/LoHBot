@@ -43,13 +43,30 @@ Public Class Bluestacks2
     End Property
 
     Public Sub FixEmulatorResolution() Implements IEmulator.FixEmulatorResolution
+        Dim BSHWnd As IntPtr = Me.GetBluestacksWindow()
+        Dim RectBS As User32.RECT
+        Dim RectLOH As User32.RECT
+        Dim RectLOH2 As Rectangle
+
+        User32.GetClientRect(BSHWnd, RectBS)
+        Dim RectBS2 As Rectangle = Rectangle.FromLTRB(RectBS.left, RectBS.top, RectBS.right, RectBS.bottom)
+
+        Dim BSPluginWnd As IntPtr = User32.FindWindowText(BSHWnd, "BlueStacks Android Plugin")
+
+        Dim LOHHWnd As IntPtr = Me.GetBluestacksWindow(True)
+        User32.GetClientRect(LOHHWnd, RectLOH)
+        RectLOH2 = Rectangle.FromLTRB(RectLOH.left, RectLOH.top, RectLOH.right, RectLOH.bottom)
+
+        Dim FinalWidth As Integer = (RectBS2.Width - RectLOH2.Width) + 963
+        Dim FinalHeight As Integer = (RectBS2.Height - RectLOH2.Height) + 556
+
         Try
             Using K As Microsoft.Win32.RegistryKey = My.Computer.Registry.LocalMachine.OpenSubKey("SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0\", True)
-                K.SetValue("WindowWidth", 960, Microsoft.Win32.RegistryValueKind.DWord)
-                K.SetValue("GuestWidth", 960, Microsoft.Win32.RegistryValueKind.DWord)
+                K.SetValue("WindowWidth", 963, Microsoft.Win32.RegistryValueKind.DWord)
+                K.SetValue("GuestWidth", 963, Microsoft.Win32.RegistryValueKind.DWord)
 
-                K.SetValue("WindowHeight", 552, Microsoft.Win32.RegistryValueKind.DWord) '600
-                K.SetValue("GuestHeight", 552, Microsoft.Win32.RegistryValueKind.DWord) '600
+                K.SetValue("WindowHeight", 556, Microsoft.Win32.RegistryValueKind.DWord) '600
+                K.SetValue("GuestHeight", 556, Microsoft.Win32.RegistryValueKind.DWord) '600
             End Using
         Catch ex As Exception
         End Try
@@ -229,8 +246,33 @@ Public Class Bluestacks2
     End Function
 
     Public Function IsEmulatorResolutionCorrect() As Boolean Implements IEmulator.IsEmulatorResolutionCorrect
-        Dim EmuRest As Point = Me.GetEmulatorResolution()
-        Return (EmuRest.X = 962 And EmuRest.Y = 583)  '634
+        Dim BSHWnd As IntPtr = Me.GetBluestacksWindow()
+        Dim RectBS As User32.RECT
+        Dim RectLOH As User32.RECT
+        Dim RectLOH2 As Rectangle
+        Dim Ret As Boolean = False
+
+        User32.GetClientRect(BSHWnd, RectBS)
+        Dim RectBS2 As Rectangle = Rectangle.FromLTRB(RectBS.left, RectBS.top, RectBS.right, RectBS.bottom)
+
+        Dim BSPluginWnd As IntPtr = User32.FindWindowText(BSHWnd, "BlueStacks Android Plugin")
+
+        Dim LOHHWnd As IntPtr = Me.GetBluestacksWindow(True)
+
+        User32.MoveWindow(LOHHWnd, 0, 0, 963, 556, True)
+
+        User32.GetClientRect(LOHHWnd, RectLOH)
+        RectLOH2 = Rectangle.FromLTRB(RectLOH.left, RectLOH.top, RectLOH.right, RectLOH.bottom)
+
+        If (RectLOH2.Width = 963 And RectLOH2.Height = 556) Then
+            Dim Ratio As Decimal = RectLOH2.Width / RectLOH2.Height
+            Dim RatioBS As Decimal = RectBS2.Width / RectBS2.Height
+
+            Dim Dif As Decimal = Math.Round(Ratio - RatioBS, 1)
+            Ret = (Dif = 0)
+        End If
+
+        Return Ret
     End Function
 
     Public Function IsEmulatorRunning() As Boolean Implements IEmulator.IsEmulatorRunning
@@ -367,50 +409,7 @@ Public Class Bluestacks2
         Dim TopWnd As IntPtr = User32.FindWindowByCaption(0, "BlueStacks App Player")
         If Not GameWnd Then Return TopWnd
 
-        If TopWnd = 0 Then Return IntPtr.Zero
-
-        Dim prevChild As IntPtr = IntPtr.Zero
-        Dim currChild As IntPtr = IntPtr.Zero
-
-        Do
-            currChild = User32.FindWindowEx(TopWnd, prevChild, Nothing, Nothing)
-            If currChild = IntPtr.Zero Then Return IntPtr.Zero
-
-            Dim sClassName As New System.Text.StringBuilder("", 256)
-            User32.GetClassName(currChild, sClassName, 256)
-
-            If sClassName.ToString.StartsWith("WindowsForms10.SysTabControl32") Then
-                TopWnd = currChild
-                prevChild = 0
-                Do
-                    currChild = User32.FindWindowEx(TopWnd, prevChild, Nothing, Nothing)
-                    If currChild = IntPtr.Zero Then Return IntPtr.Zero
-
-                    Dim sWindowText As New System.Text.StringBuilder("", 256)
-                    User32.GetWindowText(currChild, sWindowText, 256)
-                    If sWindowText.ToString.StartsWith("Legion of Heroes") Then
-                        TopWnd = currChild
-                        prevChild = 0
-                        Do
-                            currChild = User32.FindWindowEx(TopWnd, prevChild, Nothing, Nothing)
-                            If currChild = IntPtr.Zero Then Return IntPtr.Zero
-
-                            sWindowText = New System.Text.StringBuilder("", 256)
-                            User32.GetWindowText(currChild, sWindowText, 256)
-                            If sWindowText.ToString.StartsWith("BlueStacks Android Plugin") Then
-                                Return currChild
-                            End If
-                            prevChild = currChild
-                        Loop
-                    End If
-                    prevChild = currChild
-                Loop
-            End If
-            prevChild = currChild
-        Loop
-
-
-        Return IntPtr.Zero
+        Return User32.FindWindowText(TopWnd, "BlueStacks Android Plugin")
     End Function
 
     Public Function RunADB(Command As String, ByRef ReturnData As String) As Boolean Implements IEmulator.RunADB
@@ -439,10 +438,12 @@ Public Class Bluestacks2
                 ReturnData = p.StandardOutput.ReadToEnd
                 p.WaitForExit(60000)
 
-                If ReturnData.Contains("error: device not found") Or ReturnData.Trim = "" Then
-                    If SecondTry Then Return False
-                    KillProcessbyName("HD-Adb")
-                    Return RunADB(Command, ReturnData)
+                If Not Command.ToLower.Contains("shell input tap") Then
+                    If ReturnData.Contains("error: device not found") Or ReturnData.Trim = "" Then
+                        If SecondTry Then Return False
+                        KillProcessbyName("HD-Adb")
+                        Return RunADB(Command, ReturnData)
+                    End If
                 End If
             Else
                 Return False

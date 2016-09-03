@@ -23,6 +23,7 @@ Imports Newtonsoft.Json
 '5 = 286,112
 
 Module BOTFunctions
+    Public MAINSCREEN_MODE As String = ""
     Public BotWnd As frmMain
     Public EmulatorVersion As Version
     Public CFG As BOTSettings
@@ -65,7 +66,7 @@ Module BOTFunctions
         Return StaticEmulator
     End Function
 
-    Public Function IsAdmin() As Boolean        
+    Public Function IsAdmin() As Boolean
         Return (New Security.Principal.WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator)
     End Function
 
@@ -198,7 +199,12 @@ Module BOTFunctions
     Function OpenInventory() As Boolean
         If InInventory() Then Return True
         If Not InMainScreen(True) Then Return False
-        BOTRes.ClickElement("TOOLBAR_INVENTORY")
+
+        If MAINSCREEN_MODE = "LEGACY" Then
+            BOTRes.ClickElement("TOOLBAR_INVENTORY")
+        Else
+            BOTRes.ClickElement("INVENTORY_LOBBY")
+        End If
 
         Return BOTRes.DetectWait("INVENTORY", 10)
     End Function
@@ -229,14 +235,23 @@ Module BOTFunctions
         Return BOTRes.DetectWait("ADVENTURE", 10)
     End Function
 
+
     Function OpenTower() As Boolean
         If InPreTower() Then Return True
-        If InMainScreen() Then
-            If Not OpenAdventure() Then Return False
-        End If
-        If Not InAdventure() Then Return False
 
-        BOTRes.ClickElement("ADVENTURE_TOWER")
+        If InMainScreen() Then
+            If MAINSCREEN_MODE = "LOBBY" Then
+                BOTRes.ClickElement("TOWER_LOBBY")
+            Else
+                If Not OpenAdventure() Then Return False
+                If Not InAdventure() Then Return False
+
+                BOTRes.ClickElement("ADVENTURE_TOWER")
+            End If
+        Else
+            Return False
+        End If
+
         Log("Waiting for Tower screen...")
         If Not BOTRes.DetectWait("ADVENTURE_TOWER", 30) Then
             Log("Cant detect tower screen")
@@ -264,7 +279,14 @@ Module BOTFunctions
             If Not BOTRes.Detect("ADVENTURE_TOWER") Then Exit Do
         Loop
 
-        Return BOTRes.DetectWait("TOWER", 30)
+        Dim Ret As Boolean = BOTRes.DetectWait("TOWER", 30)
+        If Not Ret Then
+            Log("Something went wrong with tower detection...")
+        Else
+            Log("Tower detected!")
+        End If
+
+        Return Ret
     End Function
 
     Function InMainScreen(Optional ByVal ForceBackToMainScreen As Boolean = False) As Boolean
@@ -275,9 +297,22 @@ Module BOTFunctions
             End If
         End If
 
-        Ret = BOTRes.Detect("MAINSCREEN")
-        If Ret Then
-            EnsureToolbarVisible()
+        Dim RectInv As Rectangle = BOTRes.DetectPosition("TOOLBAR_INVENTORY")
+        If BOTRes.Detect("WORLD_LOBBY_BUTTON") AndAlso Not RectInv.IsEmpty Then
+            Ret = True
+            If RectInv.Left > 700 Then
+                If ForceBackToMainScreen Then Log("In main screen, parked at old legacy world scene")
+                MAINSCREEN_MODE = "LEGACY"
+            Else
+                If ForceBackToMainScreen Then Log("In main screen, parked at new lobby window...")
+                MAINSCREEN_MODE = "LOBBY"
+            End If
+        Else
+            If BOTRes.Detect("CHRONO_STORE_BUTTON") Then
+                Ret = True
+                If ForceBackToMainScreen Then Log("In main screen, parked at guild hideout")
+                MAINSCREEN_MODE = "LEGACY"
+            End If
         End If
 
         Return Ret
@@ -325,7 +360,11 @@ Module BOTFunctions
     End Function
 
     Function HaveHeartFragFromFriends() As Boolean
-        Return BOTRes.Detect("FRIENDS_HAVEFRAGMENT")
+        Dim Ret As Boolean = BOTRes.Detect("FRIENDS_HAVEFRAGMENT")
+        If Not Ret Then
+            Ret = BOTRes.Detect("FRIENDS_HAVEFRAGMENT_LOBBY")
+        End If
+        Return Ret
     End Function
 
     Function OpenGuildScreen() As Boolean
@@ -602,8 +641,8 @@ Module BOTFunctions
 
             If LastExpRead.Elapsed.TotalSeconds > 30 Then
                 If IsVictory(Exp) Then
+                    LastBOTAction = Stopwatch.StartNew
                     If Exp <> -1 Then
-                        LastBOTAction = Stopwatch.StartNew
                         NumFights += 1
                         Log("Victory! Exp earned = " & Exp)
                         ExpEarned += Exp
@@ -643,7 +682,13 @@ Module BOTFunctions
         If Not HaveHeartFragFromFriends() Then Return
 
         'Open friends windows
-        BOTRes.ClickElement("TOOLBAR_FRIENDS")
+
+        If MAINSCREEN_MODE = "LEGACY" Then
+            BOTRes.ClickElement("TOOLBAR_FRIENDS")
+        Else
+            BOTRes.ClickElement("FRIENDS_LOBBY")
+        End If
+
         Dim SW As Stopwatch = Stopwatch.StartNew
         Do
             If SW.Elapsed.TotalSeconds > 10 Then Exit Do
@@ -774,7 +819,7 @@ Module BOTFunctions
                     Return Ret
                 Else
                     Using bs As Emulator = GetEmulator()
-                        Using b As Bitmap = BitmapTools.CutImage(bs.GetBuffer.Bitmap, Rectangle.FromLTRB(76, 108, 220, 128))
+                        Using b As Bitmap = BitmapTools.CutImage(bs.GetBuffer.Bitmap, Rectangle.FromLTRB(487, 60, 670, 83))
 
                             Dim Ret As String = BitmapTools.OCRText(b)
                             If Ret = "" Then
@@ -853,7 +898,12 @@ Module BOTFunctions
         If InHeroWindow() Then Return True
         If Not InMainScreen(True) Then Return False
 
-        BOTRes.ClickElement("TOOLBAR_HERO")
+        If MAINSCREEN_MODE = "LEGACY" Then
+            BOTRes.ClickElement("TOOLBAR_HERO")
+        Else
+            BOTRes.ClickElement("TOOLBAR_HERO_LOBBY")
+        End If
+
         Dim SW As Stopwatch = Stopwatch.StartNew
         Do
             If SW.Elapsed.TotalSeconds > 10 Then Exit Do
@@ -1321,7 +1371,7 @@ Module BOTFunctions
         Using bs As Emulator = GetEmulator()
             Ret = BOTRes.Detect("BATTLE_VICTORY", bs)
             If Ret Then
-                Using b As Bitmap = BitmapTools.CutImage(bs.GetBuffer.Bitmap, Rectangle.FromLTRB(746, 130, 915, 159))
+                Using b As Bitmap = BitmapTools.CutImage(bs.GetBuffer.Bitmap, Rectangle.FromLTRB(796, 182, 921, 210))
                     ReadExpEarned = BitmapTools.OCRNumeric(b)
 
                     Dim Dt As Date = Now
@@ -2100,8 +2150,8 @@ Module BOTFunctions
 
         Do While BOTRes.DetecWaitAndClick("CLAIM_MINE", 2)
             Log("Claiming from mine...")
-            If Not BOTRes.DetecWaitAndClick("CLAIM_BUTTON", 2) Then
-                BOTRes.DetecWaitAndClick("CLOSE_CLAIM_SELL_EQUIPMENT", 2)
+            If Not BOTRes.DetecWaitAndClick("CLAIM_CLAIM_BUTTON", 2) Then
+                StaticEmulator.MouseLeftClick(925, 40)
             End If
         Loop
 
@@ -2465,6 +2515,7 @@ Module BOTFunctions
         Log("Checking Chrono store for rune essence")
         If BOTRes.DetecAndClick("CHRONO_STORE_BUTTON") Then
             If BOTRes.DetectWait("CHRONO_STORE", 10) Then
+                Threading.Thread.Sleep(3000)
                 Dim pos As Rectangle = BOTRes.DetectPosition("RUNE_ESSENCE")
 
                 SWLastRuneEssenceBuy = Stopwatch.StartNew

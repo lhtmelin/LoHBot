@@ -65,6 +65,11 @@ Public Class frmMain
             StaticEmulator = New Emulator(New Bluestacks0)
             Log("Using Bluestacks version " & StaticEmulator.Version.ToString)
         ElseIf BSVersion.Major = 2 Then
+            If BSVersion.Minor < 4 Then
+                MsgBox("BOT is only compatible with BS 2.4 and up. Please, update your bluestacks!", MsgBoxStyle.Critical)
+                End
+            End If
+
             StaticEmulator = New Emulator(New Bluestacks2)
             Log("Using Bluestacks version " & StaticEmulator.Version.ToString)
         Else
@@ -612,7 +617,8 @@ Public Class frmMain
                     If CFG.AutoTowerHunt Then
                         If CFG.AutoTower Then
                             If CFG.AutoTowerHard_ClimbMode Then
-                                DoAutoTower_ClimbMode()
+                                DoAutoTower()
+                                'DoAutoTower_ClimbMode()
                             Else
                                 DoAutoTower()
                             End If
@@ -951,5 +957,9 @@ Public Class frmMain
         With New AdvancedHireFuse
             .ShowDialog()
         End With
+    End Sub
+
+    Private Sub Button1_Click_1(sender As Object, e As EventArgs) Handles Button1.Click
+        OpenTower()
     End Sub
 End Class

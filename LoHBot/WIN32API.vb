@@ -123,6 +123,14 @@ Public Class User32
     Public Shared Function MoveWindow(ByVal hWnd As IntPtr, ByVal x As Integer, ByVal y As Integer, ByVal nWidth As Integer, ByVal nHeight As Integer, ByVal bRepaint As Boolean) As Boolean
     End Function
 
+    <DllImport("user32.dll", CharSet:=CharSet.Auto)>
+    Public Shared Function EnumChildWindows(ByVal hWndParent As System.IntPtr, ByVal lpEnumFunc As EnumWindowsProc, ByVal lParam As Integer) As Boolean
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
+    Public Shared Function SetParent(ByVal hWndChild As IntPtr, ByVal hWndNewParent As IntPtr) As IntPtr
+    End Function
+
     Public Enum WindowLongFlags As Integer
         GWL_EXSTYLE = -20
         GWLP_HINSTANCE = -6
@@ -146,10 +154,86 @@ Public Class User32
     Public Const MOUSEEVENTF_RIGHTDOWN = &H8 ' right button down
     Public Const MOUSEEVENTF_RIGHTUP = &H10 ' right button up
 
+    Public Const GWL_WNDPROC As Integer = -4
+    Public Const GWL_HINSTANCE As Integer = -6
+    Public Const GWL_HWNDPARENT As Integer = -8
+    Public Const GWL_STYLE As Integer = -16
     Public Const GWL_EXSTYLE As Integer = -20
+    Public Const GWL_USERDATA As Integer = -21
+    Public Const GWL_ID As Integer = -12
+
     Public Const WS_EX_LAYERED As Integer = &H80000
     Public Const LWA_ALPHA As Integer = &H2
     Public Const LWA_COLORKEY As Integer = &H1
+
+    Public Enum WindowStyles As UInteger
+        WS_BORDER = &H800000
+        WS_CAPTION = &HC00000
+        WS_CHILD = &H40000000
+        WS_CLIPCHILDREN = &H2000000
+        WS_CLIPSIBLINGS = &H4000000
+        WS_DISABLED = &H8000000
+        WS_DLGFRAME = &H400000
+        WS_GROUP = &H20000
+        WS_HSCROLL = &H100000
+        WS_MAXIMIZE = &H1000000
+        WS_MAXIMIZEBOX = &H10000
+        WS_MINIMIZE = &H20000000
+        WS_MINIMIZEBOX = &H20000
+        WS_OVERLAPPED = &H0
+        WS_OVERLAPPEDWINDOW = WS_OVERLAPPED Or WS_CAPTION Or WS_SYSMENU Or WS_SIZEFRAME Or WS_MINIMIZEBOX Or WS_MAXIMIZEBOX
+        WS_POPUP = &H80000000UI
+        WS_POPUPWINDOW = WS_POPUP Or WS_BORDER Or WS_SYSMENU
+        WS_SIZEFRAME = &H40000
+        WS_SYSMENU = &H80000
+        WS_TABSTOP = &H10000
+        WS_VISIBLE = &H10000000
+        WS_VSCROLL = &H200000
+    End Enum
+
+    Public Delegate Function EnumWindowsProc(ByVal hWnd As IntPtr, ByVal lParam As IntPtr) As Boolean
+
+    Public Shared Function FindWindowText(TopWnd As IntPtr, WindowText As String) As IntPtr
+        Dim Wnds As List(Of IntPtr) = FindSubWindows(TopWnd)
+        For Each Wnd As IntPtr In Wnds
+
+            Dim sWindowText As New System.Text.StringBuilder("", 256)
+            User32.GetWindowText(Wnd, sWindowText, 256)
+            If sWindowText.ToString.Trim.ToUpper.Equals(WindowText.Trim.ToUpper) Then Return Wnd
+        Next
+        Return IntPtr.Zero
+    End Function
+
+    Public Shared Function FindSubWindows(TopWnd As IntPtr) As List(Of IntPtr)
+        Dim Ret As New List(Of IntPtr)
+
+        Dim ListHandle As GCHandle = GCHandle.Alloc(Ret)
+        Try
+            EnumChildWindows(TopWnd, AddressOf EnumWindow, GCHandle.ToIntPtr(ListHandle))
+        Finally
+            If ListHandle.IsAllocated Then ListHandle.Free()
+        End Try
+
+        Return Ret
+    End Function
+
+    Public Shared Function GetChildWindows(ByVal ParentHandle As IntPtr) As IntPtr()
+        Dim ChildrenList As New List(Of IntPtr)
+        Dim ListHandle As GCHandle = GCHandle.Alloc(ChildrenList)
+        Try
+            EnumChildWindows(ParentHandle, AddressOf EnumWindow, GCHandle.ToIntPtr(ListHandle))
+        Finally
+            If ListHandle.IsAllocated Then ListHandle.Free()
+        End Try
+        Return ChildrenList.ToArray
+    End Function
+
+    Private Shared Function EnumWindow(ByVal Handle As IntPtr, ByVal Parameter As IntPtr) As Boolean
+        Dim ChildrenList As List(Of IntPtr) = GCHandle.FromIntPtr(Parameter).Target
+        If ChildrenList Is Nothing Then Throw New Exception("GCHandle Target could not be cast as List(Of IntPtr)")
+        ChildrenList.Add(Handle)
+        Return True
+    End Function
 
 End Class
 

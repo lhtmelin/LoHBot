@@ -25,6 +25,7 @@ Partial Class frmMain
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
         Me.tcBot = New System.Windows.Forms.TabControl()
         Me.tpMain = New System.Windows.Forms.TabPage()
+        Me.Button1 = New System.Windows.Forms.Button()
         Me.llForum = New System.Windows.Forms.LinkLabel()
         Me.llPage = New System.Windows.Forms.LinkLabel()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
@@ -100,19 +101,19 @@ Partial Class frmMain
         Me.tpStats = New System.Windows.Forms.TabPage()
         Me.lblFightsHour = New System.Windows.Forms.Label()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.grExp = New LoHBot.Graph()
         Me.lblStatsTotalExpMinute = New System.Windows.Forms.Label()
         Me.lblStatsTotalExp = New System.Windows.Forms.Label()
         Me.lblFights = New System.Windows.Forms.Label()
         Me.lblStatBotTime = New System.Windows.Forms.Label()
         Me.gbStatsGold = New System.Windows.Forms.GroupBox()
-        Me.grGold = New LoHBot.Graph()
         Me.lblStatsGoldBalanceHour = New System.Windows.Forms.Label()
         Me.lblStatsGoldBalance = New System.Windows.Forms.Label()
         Me.lblStatsCurrentGold = New System.Windows.Forms.Label()
         Me.lblStatsStartGold = New System.Windows.Forms.Label()
         Me.tpLog = New System.Windows.Forms.TabPage()
         Me.txtLog = New System.Windows.Forms.TextBox()
+        Me.grExp = New LoHBot.Graph()
+        Me.grGold = New LoHBot.Graph()
         Me.tcBot.SuspendLayout()
         Me.tpMain.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -155,6 +156,7 @@ Partial Class frmMain
         '
         'tpMain
         '
+        Me.tpMain.Controls.Add(Me.Button1)
         Me.tpMain.Controls.Add(Me.llForum)
         Me.tpMain.Controls.Add(Me.llPage)
         Me.tpMain.Controls.Add(Me.PictureBox1)
@@ -173,6 +175,16 @@ Partial Class frmMain
         Me.tpMain.TabIndex = 0
         Me.tpMain.Text = "Main"
         Me.tpMain.UseVisualStyleBackColor = True
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(611, 364)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(75, 23)
+        Me.Button1.TabIndex = 14
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.Visible = False
         '
         'llForum
         '
@@ -1004,14 +1016,6 @@ Partial Class frmMain
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Experience"
         '
-        'grExp
-        '
-        Me.grExp.Color = System.Drawing.Color.SeaGreen
-        Me.grExp.Location = New System.Drawing.Point(6, 33)
-        Me.grExp.Name = "grExp"
-        Me.grExp.Size = New System.Drawing.Size(648, 180)
-        Me.grExp.TabIndex = 8
-        '
         'lblStatsTotalExpMinute
         '
         Me.lblStatsTotalExpMinute.AutoSize = True
@@ -1061,14 +1065,6 @@ Partial Class frmMain
         Me.gbStatsGold.TabIndex = 0
         Me.gbStatsGold.TabStop = False
         Me.gbStatsGold.Text = "Gold"
-        '
-        'grGold
-        '
-        Me.grGold.Color = System.Drawing.Color.DarkGoldenrod
-        Me.grGold.Location = New System.Drawing.Point(9, 33)
-        Me.grGold.Name = "grGold"
-        Me.grGold.Size = New System.Drawing.Size(648, 180)
-        Me.grGold.TabIndex = 7
         '
         'lblStatsGoldBalanceHour
         '
@@ -1131,6 +1127,22 @@ Partial Class frmMain
         Me.txtLog.Size = New System.Drawing.Size(673, 539)
         Me.txtLog.TabIndex = 0
         Me.txtLog.WordWrap = False
+        '
+        'grExp
+        '
+        Me.grExp.Color = System.Drawing.Color.SeaGreen
+        Me.grExp.Location = New System.Drawing.Point(6, 33)
+        Me.grExp.Name = "grExp"
+        Me.grExp.Size = New System.Drawing.Size(648, 180)
+        Me.grExp.TabIndex = 8
+        '
+        'grGold
+        '
+        Me.grGold.Color = System.Drawing.Color.DarkGoldenrod
+        Me.grGold.Location = New System.Drawing.Point(9, 33)
+        Me.grGold.Name = "grGold"
+        Me.grGold.Size = New System.Drawing.Size(648, 180)
+        Me.grGold.TabIndex = 7
         '
         'frmMain
         '
@@ -1274,4 +1286,5 @@ Partial Class frmMain
     Friend WithEvents PictureBox1 As PictureBox
     Friend WithEvents chkTowerClimb As CheckBox
     Friend WithEvents lblAdvancedHireFuse As Label
+    Friend WithEvents Button1 As Button
 End Class
